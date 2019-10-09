@@ -138,5 +138,78 @@ namespace Ksu.Cis300.NameLookup
             CheckKey(k);
             _elements = Add(_elements, k, v);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="min"></param>
+        /// <returns></returns>
+        private static BinaryTreeNode<KeyValuePair<TKey, TValue>> RemoveMinimumKey(
+            BinaryTreeNode<KeyValuePair<TKey, TValue>> t, out KeyValuePair<TKey, TValue> min)
+        {
+            BinaryTreeNode<KeyValuePair<TKey, TValue>> temp = t;
+            if (t.LeftChild == null)
+            {
+                min = t.Data;
+                return t.RightChild;
+            }
+            else
+            {
+                temp = RemoveMinimumKey(t.LeftChild, out min);
+                return new BinaryTreeNode<KeyValuePair<TKey, TValue>>(min, t.LeftChild, temp);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="t"></param>
+        /// <param name="removed"></param>
+        /// <returns></returns>
+        private static BinaryTreeNode<KeyValuePair<TKey, TValue>> Remove(
+            TKey key, BinaryTreeNode<KeyValuePair<TKey, TValue>> t, out bool removed)
+        {
+            CheckKey(key);
+            if (t == null)
+            {
+                removed = false;
+                return t;
+            }
+            int comp = t.Data.Key.CompareTo(key);
+            removed = true;
+            if (comp > 0)
+            {
+                BinaryTreeNode < KeyValuePair<TKey, TValue> > r = Remove(key, t.LeftChild, out removed);
+                return new BinaryTreeNode<KeyValuePair<TKey, TValue>>(t.Data, r, t.RightChild);
+            }
+            if (comp < 0)
+            {
+                BinaryTreeNode<KeyValuePair<TKey, TValue>> l = Remove(key, t.RightChild, out removed);
+                return new BinaryTreeNode<KeyValuePair<TKey, TValue>>(t.Data, t.LeftChild, l);
+            }
+            if (t.LeftChild == null)
+            {
+                if (t.RightChild == null) return null;
+                return t.RightChild;
+            }
+            if (t.RightChild == null) return t.LeftChild;
+            KeyValuePair<TKey, TValue> min;
+            return RemoveMinimumKey(t, out min);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        public bool Remove(TKey k)
+        {
+            CheckKey(k);
+            bool removed;
+            Remove(k, _elements, out removed);
+            return removed
+        }
     }
 }
