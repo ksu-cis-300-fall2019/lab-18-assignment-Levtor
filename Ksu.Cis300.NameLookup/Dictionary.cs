@@ -140,11 +140,12 @@ namespace Ksu.Cis300.NameLookup
         }
 
         /// <summary>
-        /// 
+        /// finds and removes the minimum key from a passed BinaryTree
+        /// returns the data of the keyvaluepair removed
         /// </summary>
-        /// <param name="t"></param>
-        /// <param name="min"></param>
-        /// <returns></returns>
+        /// <param name="t">the BinaryTree to remove the keyvaluepair from</param>
+        /// <param name="min">the data of the keyvaluepair that was removed</param>
+        /// <returns>the passed BinaryTree with the minimum keyvaluepair removed</returns>
         private static BinaryTreeNode<KeyValuePair<TKey, TValue>> RemoveMinimumKey(
             BinaryTreeNode<KeyValuePair<TKey, TValue>> t, out KeyValuePair<TKey, TValue> min)
         {
@@ -157,17 +158,17 @@ namespace Ksu.Cis300.NameLookup
             else
             {
                 temp = RemoveMinimumKey(t.LeftChild, out min);
-                return new BinaryTreeNode<KeyValuePair<TKey, TValue>>(min, t.LeftChild, temp);
+                return new BinaryTreeNode<KeyValuePair<TKey, TValue>>(t.Data, temp, t.RightChild);
             }
         }
 
         /// <summary>
-        /// 
+        /// removes the keyvaluepair associated with a passed key from a passed BinaryTree
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="t"></param>
-        /// <param name="removed"></param>
-        /// <returns></returns>
+        /// <param name="key">the key of the keyvaluepair to be removed</param>
+        /// <param name="t">the BinaryTree to remove the keyvaluepair from</param>
+        /// <param name="removed">whether the keyvaluepair was successfully removed</param>
+        /// <returns>the BinaryTree with the keyvaluepair removed</returns>
         private static BinaryTreeNode<KeyValuePair<TKey, TValue>> Remove(
             TKey key, BinaryTreeNode<KeyValuePair<TKey, TValue>> t, out bool removed)
         {
@@ -178,38 +179,45 @@ namespace Ksu.Cis300.NameLookup
                 return t;
             }
             int comp = t.Data.Key.CompareTo(key);
-            removed = true;
             if (comp > 0)
             {
-                BinaryTreeNode < KeyValuePair<TKey, TValue> > r = Remove(key, t.LeftChild, out removed);
+                BinaryTreeNode<KeyValuePair<TKey, TValue>> r = Remove(key, t.LeftChild, out removed);
                 return new BinaryTreeNode<KeyValuePair<TKey, TValue>>(t.Data, r, t.RightChild);
             }
-            if (comp < 0)
+            else if (comp < 0)
             {
-                BinaryTreeNode<KeyValuePair<TKey, TValue>> l = Remove(key, t.RightChild, out removed);
-                return new BinaryTreeNode<KeyValuePair<TKey, TValue>>(t.Data, t.LeftChild, l);
+                BinaryTreeNode<KeyValuePair<TKey, TValue>> r = Remove(key, t.RightChild, out removed);
+                return new BinaryTreeNode<KeyValuePair<TKey, TValue>>(t.Data, t.LeftChild, r);
             }
-            if (t.LeftChild == null)
+            else
             {
-                if (t.RightChild == null) return null;
-                return t.RightChild;
+                removed = true;
+                if (t.LeftChild == null)
+                {
+                    if (t.RightChild == null) return null;
+                    return t.RightChild;
+                }
+                else
+                {
+                    if (t.RightChild == null) return t.LeftChild;
+                    KeyValuePair<TKey, TValue> min;
+                    BinaryTreeNode<KeyValuePair<TKey, TValue>> r = RemoveMinimumKey(t.RightChild, out min);
+                    return new BinaryTreeNode<KeyValuePair<TKey, TValue>>(min, t.LeftChild, r);
+                }
             }
-            if (t.RightChild == null) return t.LeftChild;
-            KeyValuePair<TKey, TValue> min;
-            return RemoveMinimumKey(t, out min);
         }
 
         /// <summary>
-        /// 
+        /// removes the keyvaluepair associated with a passed key from the dictionary
         /// </summary>
-        /// <param name="k"></param>
-        /// <returns></returns>
+        /// <param name="k">the key of the keyvaluepair to remove</param>
+        /// <returns>whether the keyvaluepair was successfully removed</returns>
         public bool Remove(TKey k)
         {
             CheckKey(k);
             bool removed;
-            Remove(k, _elements, out removed);
-            return removed
+            _elements = Remove(k, _elements, out removed);
+            return removed;
         }
     }
 }
